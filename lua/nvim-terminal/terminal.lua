@@ -29,6 +29,7 @@ function Terminal:open(term_number)
 		self.window:create_term()
 		self.bufs[term_number] = self.window:get_bufno()
 		vim.bo[self.bufs[term_number]].buflisted = false
+		vim.bo[self.bufs[term_number]].filetype = "toggleterm"
 
 		-- window does not exist but buffer does
 	elseif create_win then
