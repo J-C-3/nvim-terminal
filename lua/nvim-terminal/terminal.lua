@@ -30,6 +30,7 @@ function Terminal:open(term_number)
 		self.bufs[term_number] = self.window:get_bufno()
 		vim.bo[self.bufs[term_number]].buflisted = false
 		vim.bo[self.bufs[term_number]].filetype = "toggleterm"
+		vim.api.nvim_buf_set_var(self.bufs[term_number], "name", vim.o.shell)
 
 		-- window does not exist but buffer does
 	elseif create_win then
@@ -41,6 +42,9 @@ function Terminal:open(term_number)
 		self.window:focus()
 		cmd(":terminal")
 		self.bufs[term_number] = self.window:get_bufno()
+		vim.bo[self.bufs[term_number]].buflisted = false
+		vim.bo[self.bufs[term_number]].filetype = "toggleterm"
+		vim.api.nvim_buf_set_var(self.bufs[term_number], "name", vim.o.shell)
 
 		-- buffer and window exist
 	else
