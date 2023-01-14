@@ -71,33 +71,40 @@ end
 -- Returns the validity of the window
 -- @return { boolean } window is valid or not
 function Window:is_valid()
-    if (self.winid == nil) then return false end
+    if self.winid == nil then return false end
 
     return v.nvim_win_is_valid(self.winid)
 end
 
-function Window:set_buf(bufno) return v.nvim_win_set_buf(self.winid, bufno) end
+function Window:set_buf(bufno)
+    return v.nvim_win_set_buf(self.winid, bufno)
+end
 
-function Window:focus() v.nvim_set_current_win(self.winid) end
+function Window:focus()
+    v.nvim_set_current_win(self.winid)
+end
 
 -- Returns the buffer number
 -- @return { number } buffer number
 function Window:get_bufno()
-    if self:is_valid() then return v.nvim_win_get_buf(self.winid) end
+    if self:is_valid() then
+        return v.nvim_win_get_buf(self.winid)
+    end
 end
 
 -- Increase window height
 function Window:change_height(by)
     local _, height = self:get_size()
-	self.height = height + by
-	self:update_size()
+
+    self.height = height + by
+    self:update_size()
 end
 
 -- Increase window height
 function Window:change_width(by)
     local width, _ = self:get_size()
-	self.width = width + by
-	self:update_size()
+    self.width = width + by
+    self:update_size()
 end
 
 return Window
