@@ -43,9 +43,17 @@ end
 
 -- Set window width to self.width
 function Window:update_size()
-    if self.width ~= nil then v.nvim_win_set_width(self.winid, self.width) end
+    if not self or self == nil or self.winid == nil or not vim.api.nvim_win_is_valid(self.winid) then
+        return
+    end
 
-    if self.height ~= nil then v.nvim_win_set_height(self.winid, self.height) end
+    if self.width ~= nil then
+        v.nvim_win_set_width(self.winid, self.width)
+    end
+
+    if self.height ~= nil then
+        v.nvim_win_set_height(self.winid, self.height)
+    end
 end
 
 function Window:get_size()
