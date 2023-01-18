@@ -64,7 +64,7 @@ function Window:get_size()
 end
 
 -- close the window
-function Window:close(winid)
+function Window:close()
     if self:is_valid() then v.nvim_win_close(self.winid, false) end
 end
 

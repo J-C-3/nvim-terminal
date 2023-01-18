@@ -1,17 +1,28 @@
 # nvim-terminal
 
+---
+
+Forked from: https://github.com/s1n7ax/nvim-terminal
+
+This is just a personal fork. Please have absolutely no expectation of maintenance.
+
+Any of the information contained herein is likely not up to date with my fork's changes.
+
+---
+
 Terminal plugin to open/toggle the terminals in Neovim
 
 https://user-images.githubusercontent.com/18459807/129582749-2e732591-cb8d-4cb8-a427-9da0c79a621d.mp4
 
 ## Features
 
-* Toggle terminal window
-* Quick switching between multiple terminal buffers
+- Toggle terminal window
+- Quick switching between multiple terminal buffers
 
 ## Install the plugin
 
 **packer**
+
 ```lua
 use {
     's1n7ax/nvim-terminal',

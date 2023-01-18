@@ -1,24 +1,20 @@
+M = {}
 local config = require("nvim-terminal.config")
 local Util = require("nvim-terminal.util")
-local Terminal = require("nvim-terminal.terminal")
 local Window = require("nvim-terminal.window")
-local DefaultTerminal = Terminal:new(Window:new())
 local S = Util.String
+local Terminal = require("nvim-terminal.terminal")
 
-NTGlobal = {}
+M.NewTerminalInstance = function(windowOpts)
+    return vim.deepcopy(Terminal:new(Window:new(windowOpts)))
+end
 
-local setup = function(opts)
+M.setup = function(opts)
     config = Util.Lua.merge_tables(config, opts or {})
 
     if config.terminals == nil then
         return
     end
-
-    local window = Window:new(config.window)
-    local terminal = Terminal:new(window)
-
-    NTGlobal["terminal"] = terminal
-    NTGlobal["window"] = window
 
     if not config.disable_default_keymaps then
         -- setting toggle keymap
@@ -65,9 +61,4 @@ local setup = function(opts)
     end
 end
 
-return {
-    Terminal = Terminal,
-    Window = Window,
-    DefaultTerminal = DefaultTerminal,
-    setup = setup,
-}
+return M
