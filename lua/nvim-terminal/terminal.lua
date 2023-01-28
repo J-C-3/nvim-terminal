@@ -1,4 +1,5 @@
 local Window = require("nvim-terminal.window")
+local Util = require("nvim-terminal.util")
 
 local v = vim.api
 local cmd = vim.cmd
@@ -10,9 +11,45 @@ function Terminal:new(window, opt)
     return self
 end
 
-function Terminal:init()
-    error("There are some breaking changes!")
-    error("Please check new configuration at https://github.com/s1n7ax/nvim-terminal")
+function Terminal:delete(term_number)
+    local last = self.last_term
+    local count = Util.Lua.len(self.bufs)
+    local deleteMe = self.bufs[term_number]
+
+    if count == 1 then
+        vim.api.nvim_buf_delete(deleteMe, { force = true })
+        self.bufs = {}
+        return false
+    end
+
+    if term_number <= last then
+        last = last - 1
+    end
+
+    local temp = {}
+
+    local i = 1
+    for _, buf in ipairs(self.bufs) do
+        if buf == deleteMe then
+            goto continue
+        end
+
+        temp[i] = buf
+
+        i = i + 1
+
+        ::continue::
+    end
+
+    self.last_term = last
+
+    vim.api.nvim_buf_delete(deleteMe, { force = true })
+
+    self.bufs = temp
+
+    self:open(self.last_term)
+
+    return Util.Lua.len(temp) ~= 0
 end
 
 function Terminal:open(term_number)

@@ -13,8 +13,16 @@ function Lua.merge_tables(t1, t2)
     return t1
 end
 
+function Lua.len(t)
+    local count = 0
+    for _ in pairs(t) do
+        count = count + 1
+    end
+    return count
+end
+
 local String = {}
 
 function String.is_not_empty(str) return str ~= nil and str ~= '' or false end
 
-return {Lua = Lua, String = String}
+return { Lua = Lua, String = String }
