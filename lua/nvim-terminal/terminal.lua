@@ -1,9 +1,6 @@
 local Window = require("nvim-terminal.window")
 local Util = require("nvim-terminal.util")
 
-local v = vim.api
-local cmd = vim.cmd
-
 local Terminal = { bufs = {}, last_winid = nil, last_term = nil }
 
 function Terminal:new(window, opt)
@@ -58,11 +55,11 @@ function Terminal:open(term_number)
     local create_win = not self.window:is_valid()
     -- create buffer if it does not exist by the given term_number or the stored
     -- buffer number is no longer valid
-    local create_buf = self.bufs[term_number] == nil or not v.nvim_buf_is_valid(self.bufs[term_number])
+    local create_buf = self.bufs[term_number] == nil or not vim.api.nvim_buf_is_valid(self.bufs[term_number])
 
     -- window and buffer does not exist
     if create_win and create_buf then
-        self.last_winid = v.nvim_get_current_win()
+        self.last_winid = vim.api.nvim_get_current_win()
         self.window:create_term()
         self.bufs[term_number] = self.window:get_bufno()
         vim.bo[self.bufs[term_number]].buflisted = false
@@ -71,13 +68,13 @@ function Terminal:open(term_number)
 
         -- window does not exist but buffer does
     elseif create_win then
-        self.last_winid = v.nvim_get_current_win()
+        self.last_winid = vim.api.nvim_get_current_win()
         self.window:create(self.bufs[term_number])
 
         -- buffer does not exist but window does
     elseif create_buf then
         self.window:focus()
-        cmd(":terminal")
+        vim.cmd(":terminal")
         self.bufs[term_number] = self.window:get_bufno()
         vim.bo[self.bufs[term_number]].buflisted = false
         vim.bo[self.bufs[term_number]].filetype = "toggleterm"
@@ -97,13 +94,13 @@ function Terminal:open(term_number)
 end
 
 function Terminal:close()
-    local current_winid = v.nvim_get_current_win()
+    local current_winid = vim.api.nvim_get_current_win()
 
     if self.window:is_valid() then
         self.window:close()
 
         if current_winid == self.window.winid then
-            v.nvim_set_current_win(self.last_winid)
+            vim.api.nvim_set_current_win(self.last_winid)
         end
     end
 end
@@ -118,6 +115,109 @@ function Terminal:toggle()
     else
         self:open(self.last_term)
     end
+end
+
+function getTabTerminal(tabnr)
+    for _, v in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if vim.bo[vim.api.nvim_win_get_buf(v)].filetype == "toggleterm" then
+            return v
+        end
+    end
+end
+
+function HandleClickTab(minwid, clicks, btn, mods)
+    local t = getTabTerminal(vim.api.nvim_get_current_tabpage())
+    if t == nil then return end
+    t:open(minwid)
+    TF.UpdateWinbar()
+end
+
+function HandleClickClose(minwid, clicks, btn, mods)
+    local t = getTabTerminal(vim.api.nvim_get_current_tabpage())
+    if t == nil then return end
+    if t:delete(minwid) then
+        TF.UpdateWinbar()
+    end
+end
+
+function Terminal:pickTerm()
+    local pickers = require("telescope.pickers")
+    local finders = require("telescope.finders")
+    local actions = require("telescope.actions")
+    local action_state = require("telescope.actions.state")
+    local conf = require("telescope.config").values
+
+    local opts = require("telescope.themes").get_dropdown({})
+
+    local termPretty = {}
+    local termBufs = {}
+    for i, v in ipairs(self.bufs) do
+        table.insert(termPretty, string.format("%d: %s", i, vim.api.nvim_buf_get_var(v, "name")))
+        table.insert(termBufs, i)
+    end
+
+    pickers.new(opts, {
+        prompt_title = "Terminals",
+        finder = finders.new_table({
+            results = termPretty,
+        }),
+        sorter = conf.generic_sorter(opts),
+        attach_mappings = function(prompt_bufnr, _)
+            actions.select_default:replace(function()
+                actions.close(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+
+                if selection == nil then
+                    return
+                end
+
+                local nvt = require("nvim-tree.view").is_visible()
+                if nvt then
+                    require("nvim-tree.api").tree.close()
+                end
+
+                self:open(termBufs[selection.index])
+                TF.UpdateWinbar()
+
+                if nvt then
+                    require("nvim-tree.api").tree.open()
+                    vim.cmd("wincmd p")
+                end
+            end)
+
+            return true
+        end,
+    }):find()
+end
+
+function Terminal:NextTerm()
+    if self == nil then
+        return
+    end
+
+    local nextTerm = self.last_term + 1
+
+    if self.bufs[nextTerm] == nil then
+        nextTerm = 1
+    end
+
+    self:open(nextTerm)
+    TF.UpdateWinbar()
+end
+
+function Terminal:PrevTerm()
+    if self == nil then
+        return
+    end
+
+    local nextTerm = self.last_term - 1
+
+    if self.bufs[nextTerm] == nil then
+        return
+    end
+
+    self:open(nextTerm)
+    TF.UpdateWinbar()
 end
 
 return Terminal
