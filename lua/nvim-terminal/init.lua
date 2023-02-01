@@ -9,14 +9,14 @@ TF.Term = {}
 TF.NewTerm = function()
     local tp = vim.api.nvim_get_current_tabpage()
 
-    TF.Term[tp]:open(len(TF.Term[tp].bufs) + 1)
+    TF.Term[tp]:open(#TF.Term[tp].bufs + 1)
     TF.UpdateWinbar()
 end
 
 TF.UpdateWinbar = function()
     local tp = vim.api.nvim_get_current_tabpage()
     local winid = vim.fn.bufwinid(TF.Term[tp].bufs[TF.Term[tp].last_term])
-    local count = len(TF.Term[tp].bufs)
+    local count = #TF.Term[tp].bufs
 
     if winid < 0 then
         return
@@ -84,7 +84,7 @@ TF.PrevTerm = function()
     local nextTerm = TF.Term[vim.api.nvim_get_current_tabpage()].last_term - 1
 
     if TF.Term[vim.api.nvim_get_current_tabpage()].bufs[nextTerm] == nil then
-        nextTerm = len(TF.Term[vim.api.nvim_get_current_tabpage()].bufs)
+        nextTerm = #TF.Term[vim.api.nvim_get_current_tabpage()].bufs
     end
 
     TF.Term[vim.api.nvim_get_current_tabpage()]:open(nextTerm)
@@ -100,7 +100,7 @@ TF.Toggle = function()
     TF.Term[vim.api.nvim_get_current_tabpage()]:toggle()
 
     local winid = TF.Term[vim.api.nvim_get_current_tabpage()].window.winid
-    if vim.api.nvim_win_is_valid(winid) then
+    if vim.api.nvim_win_is_valid(winid) and PanelNS ~= nil then
         vim.api.nvim_win_set_hl_ns(winid, PanelNS)
     end
 
